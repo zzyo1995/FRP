@@ -45,7 +45,7 @@ public class Parser {
         return doc.outerHtml();
     }*/
 
-    public String parseBlock(String origin) {
+    public String[] parseBlock(String origin) {
         Pattern pattern = Pattern.compile("(\\s*?\\n){2,}");
         Matcher matcher = pattern.matcher(origin);
         StringBuffer sb = new StringBuffer();
@@ -57,11 +57,13 @@ public class Parser {
         ArrayList<BlockItem> blockItems = new ArrayList<>();
         String[] blocks = origin.split("<\\$BLOCK-END\\$>");
         for (String str : blocks) {
-            BlockItem blockItem = new BlockItem();
-
             System.out.println("block--->" + str);
         }
         System.out.println("------------------------------------------------");
+        return blocks;
+    }
+
+    public String parseSentences(String origin){
         return origin;
     }
 

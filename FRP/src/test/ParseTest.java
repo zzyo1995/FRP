@@ -74,7 +74,7 @@ public class ParseTest {
         tmp = parser.parseHtmlToText(tmp);
         System.out.println(tmp);
         System.out.println("---------------------   parse block  ------------------------------\n");
-        tmp = parser.parseBlock(tmp);
-        System.out.println(tmp);
+        String[] blocks = parser.parseBlock(tmp);
+        System.out.println(blocks.toString());
     }
 }

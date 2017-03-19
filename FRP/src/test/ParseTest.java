@@ -16,7 +16,7 @@ public class ParseTest {
             "                $encoded = json_encode($data, JSON_UNESCAPED_UNICODE);&nbsp;<span style=\"font-size: inherit;\">}</span></code></pre><p>all exported beautifully.<a href=\"http://www.baidu.com\" target=\"_blank\">linkExample</a>&nbsp; &nbsp; &nbsp; &nbsp; /home/user/file.sql</p><p><br></p><p><br></p><p>C:\\project\\classes</p><p><br></p>";
 
 
-    private String test2 = "<p>Hi!&nbsp;Json&nbsp;export&nbsp;not&nbsp;good&nbsp;for&nbsp;Cyrillic&nbsp;in&nbsp;unicode.</p>\n" +
+    private String test2 = "<p>Hi!&nbsp;\"Json&nbsp;export\"&nbsp;not&nbsp;good&nbsp;for&nbsp;Cyrillic&nbsp;in&nbsp;unicode.</p>\n" +
             "<p>If&nbsp;I&nbsp;add&nbsp;JSON_UNESCAPED_UNICODE&nbsp;all&nbsp;exported&nbsp;beautifully.</p><p><br></p><pre style=\"max-width: 100%;\"><code class=\"php hljs\" codemark=\"1\"> <span class=\"hljs-keyword\">if</span> (<span class=\"hljs-keyword\">isset</span>($GLOBALS[<span class=\"hljs-string\">'json_pretty_print'</span>])\n" +
             "                &amp;&amp; $GLOBALS[<span class=\"hljs-string\">'json_pretty_print'</span>]\n" +
             "            ) {\n" +
@@ -24,7 +24,7 @@ public class ParseTest {
             "            } <span class=\"hljs-keyword\">else</span> {\n" +
             "                $encoded = json_encode($data, JSON_UNESCAPED_UNICODE);\n" +
             "            }\n" +
-            "\t\t\t</code></pre><p><br></p><p>../home/user/file1.sql &nbsp; C:\\Windows\\System32-calc\\calc.exe &nbsp;/home/user/file.sql &nbsp; &nbsp;./home/user/file.java &nbsp; &nbsp;C:\\project\\classes</p><pre style=\"max-width: 100%;\"><code class=\"javascript hljs\" codemark=\"1\"> <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">submit</span>(<span class=\"hljs-params\"></span>) </span>{\n" +
+            "\t\t\t</code></pre><p><br></p><p>../home/user/file1.sql &nbsp; \'file example:\'C:\\Windows\\System32-calc\\calc.exe &nbsp;/home/user/file.sql &nbsp; &nbsp;./home/user/file.java &nbsp; &nbsp;C:\\project\\classes</p><pre style=\"max-width: 100%;\"><code class=\"javascript hljs\" codemark=\"1\"> <span class=\"hljs-function\"><span class=\"hljs-keyword\">function</span> <span class=\"hljs-title\">submit</span>(<span class=\"hljs-params\"></span>) </span>{\n" +
             "        <span class=\"hljs-comment\">// 获取编辑器区域完整html代码</span>\n" +
             "        <span class=\"hljs-keyword\">var</span> html = editor.$txt.html();\n" +
             "        <span class=\"hljs-comment\">/*html = html.replace(/\\s+/g, \"\");*/</span>\n" +
@@ -60,6 +60,12 @@ public class ParseTest {
         System.out.println(tmp);
         System.out.println("---------------------   parse path  ------------------------------\n");
         tmp = parser.parsePath(tmp);
+        System.out.println(tmp);
+        System.out.println("---------------------   parse html&list  ------------------------------\n");
+        tmp = parser.parseHtmlToText(tmp);
+        System.out.println(tmp);
+        System.out.println("---------------------   parse quote  ------------------------------\n");
+        tmp = parser.parseQuote(tmp);
         System.out.println(tmp);
     }
 }

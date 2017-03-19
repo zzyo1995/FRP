@@ -75,11 +75,9 @@ public class Parser {
             replacement.setOrigin(href);
             replacement.setReplacement("<$LINK-HTTP$" + linkIndex + ">");
             replacements.add(replacement);
-            if(text.matches("(http|https|ftp):\\/\\/.+"))
-            {
+            if (text.matches("(http|https|ftp):\\/\\/.+")) {
                 link.after("<$LINK-HTTP$" + linkIndex + ">");
-            }
-            else{
+            } else {
                 link.after(text + "<$LINK-HTTP$" + linkIndex + ">");
             }
             link.remove();
@@ -94,7 +92,7 @@ public class Parser {
         int fileIndex = 0;
         StringBuffer sb = new StringBuffer();
         for (int index = 0; index < fileTypes.length; index++) {
-                    // parse unix path file(full path and relative path)
+            // parse unix path file(full path and relative path)
             regEx = "((((\\.){0,2}\\/)*((((\\w*-|\\w*\\.)*\\w*)\\/)*((\\w*-|\\w*\\.)*\\w*)))|" +
                     // windows path(full path and relative path)
                     "(([C-Z]:|(\\.){0,2}\\\\)?(((\\w*-|\\w*\\.)*\\w*)\\\\)*((\\w*-|\\w*\\.)*\\w*)))\\." + fileTypes[index] + "(?=[^\\.])";
@@ -150,20 +148,60 @@ public class Parser {
         return origin;
     }
 
+    public String parseHtmlToText(String origin) {
+        origin = origin.replaceAll("<li>", "<\\$LIST\\$>");
+        origin = origin.replaceAll("<br>", "\n");
+        origin = origin.replaceAll("<[\\/]?[a-z]+>", "");
+        return origin;
+    }
+
+    public String parseQuote(String origin) {
+        String regEx = "([\"']).*?\\1";
+        Pattern pattern = Pattern.compile(regEx);
+        Matcher matcher = pattern.matcher(origin);
+        StringBuffer sb = new StringBuffer();
+        int quoteIndex = 0;
+        while (matcher.find()) {
+            String quote = matcher.group(0);
+            String type = "<$QUOTE$" + quoteIndex + ">";
+            type = Matcher.quoteReplacement(type);
+            System.out.println(quote + "    " + type);
+            Replacement replacement = new Replacement();
+            replacement.setOrigin(quote);
+            replacement.setReplacement(type);
+            replacements.add(replacement);
+            matcher.appendReplacement(sb, type);
+            quoteIndex++;
+        }
+        matcher.appendTail(sb);
+        origin = sb.toString();
+        sb.setLength(0);
+        return origin;
+    }
+
+    public String parseEmail(String origin){
+
+    }
+
     public String parseList(String origin) {
         Document doc = Jsoup.parse(origin);
         Elements ulLists = doc.select("ul");
         Elements olLists = doc.select("ol");
-        int index = 0;
         for (Element ulList : ulLists) {
             Elements lists = ulList.select("li");
             for (Element list : lists) {
-
+                //list.tagName("ULIST");
             }
         }
-        return doc.outerHtml();
-        //HtmlToPlainText htmlToPlainText = new HtmlToPlainText();
-        //return htmlToPlainText.getPlainText(doc);
+        for (Element olList : olLists) {
+            Elements lists = olList.select("li");
+            for (Element list : lists) {
+                //list.tagName("OLIST");
+            }
+        }
+        //return doc.outerHtml();
+        HtmlToPlainText htmlToPlainText = new HtmlToPlainText();
+        return htmlToPlainText.getPlainText(doc);
     }
 
 

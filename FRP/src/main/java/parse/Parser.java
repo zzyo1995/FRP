@@ -63,8 +63,9 @@ public class Parser {
         return blocks;
     }
 
-    public String parseSentences(String origin){
-        return origin;
+    public String parseSentences(String[] blocks){
+
+        return "";
     }
 
     public String parseCode(String origin) {
@@ -195,7 +196,7 @@ public class Parser {
         while (matcher.find()){
             matcher.appendReplacement()
         }*/
-        origin = origin.replaceAll("(?<=>)\\s*(?=<)", "");
+        origin = origin.replaceAll("(?<!\\$CODE-(.*)?)(?<=>)\\s*(?=<)", "");
         origin = origin.replaceAll("<li>", "<\\$LIST\\$>");
         origin = origin.replaceAll("<p><br><\\/p>", "\n");
         origin = origin.replaceAll("<br>", "\n");

@@ -44,7 +44,7 @@ public class ParseTest {
             "                        location.href = data;\n" +
             "                    }\n" +
             "                }\n" +
-            "        );<br></code></pre><p><br></p><p><br></p><p><ol><li>move&nbsp;the&nbsp;code&nbsp;which&nbsp;finds&nbsp;$tmp_subdir&nbsp;from&nbsp;file.php&nbsp;to&nbsp;configfile.php</li><li>call&nbsp;this&nbsp;function&nbsp;in&nbsp;both&nbsp;file.php&nbsp;and&nbsp;Encoding.php</li><li>right&nbsp;?</li><li>Can&nbsp;i&nbsp;also&nbsp;align&nbsp;the&nbsp;parenthesis&nbsp;a&nbsp;bit&nbsp;as&nbsp;it&nbsp;doesn't&nbsp;look&nbsp;that&nbsp;good&nbsp;?</li><li>Also&nbsp;I&nbsp;have&nbsp;to&nbsp;move&nbsp;it&nbsp;to&nbsp;ConfigFile.php&nbsp;right&nbsp;?</li></ol><div><br></div><div></div></p><p>Yes,C:\\project\\classes;&nbsp;  core.java.util;&nbsp; /ext-name/&nbsp; ./&nbsp; /var/cache/mopidy&nbsp;please&nbsp;use&nbsp;coding&nbsp;style&nbsp;as&nbsp;described&nbsp;in&nbsp;our&nbsp;docs:&nbsp;<a href=\"https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style\" target=\"_blank\">https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style</a></p><p><br></p>";
+            "        );<br></code></pre><p><br></p><p><br></p><p><ol><li>move&nbsp;the&nbsp;code&nbsp;which&nbsp;finds&nbsp;$tmp_subdir&nbsp;from&nbsp;file.php&nbsp;to&nbsp;configfile.php</li><li>call&nbsp;this&nbsp;function&nbsp;in&nbsp;both&nbsp;file.php&nbsp;and&nbsp;Encoding.php</li><li>right&nbsp;zzyo1995@qq.com?</li><li>Can&nbsp;i&nbsp;also&nbsp;align&nbsp;the&nbsp;parenthesis&nbsp;a&nbsp;756257660@qq.combit&nbsp;as&nbsp;it&nbsp;doesn't&nbsp;look&nbsp;that&nbsp;good&nbsp;?</li><li>Also&nbsp;I&nbsp;have&nbsp;to&nbsp;move&nbsp;it&nbsp;to&nbsp;ConfigFile.php&nbsp;right&nbsp;?</li></ol><div><br></div><div></div><p>Yes,zzyo@hust.edu.cn&nbsp;C:\\project\\classes;&nbsp;  core.java.util;&nbsp; /ext-name/&nbsp; ./&nbsp; /var/cache/mopidy&nbsp;please&nbsp;use&nbsp;coding&nbsp;style&nbsp;as&nbsp;described&nbsp;in&nbsp;our&nbsp;docs:&nbsp;<p>e.g e.g. i.e .NET Imo </p><a href=\"https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style\" target=\"_blank\">https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style</a><p><br></p>";
 
     @Test
     public void testCode(){
@@ -55,6 +55,15 @@ public class ParseTest {
         System.out.println("---------------------   parse link  -----------------------------\n");
         tmp = parser.parseLink(tmp);
         System.out.println(tmp);
+        System.out.println("---------------------   parse email  ------------------------------\n");
+        tmp = parser.parseEmail(tmp);
+        System.out.println(tmp);
+        System.out.println("---------------------   parse quote  ------------------------------\n");
+        tmp = parser.parseQuote(tmp);
+        System.out.println(tmp);
+        System.out.println("---------------------   parse shorts  ------------------------------\n");
+        tmp = parser.parseShort(tmp);
+        System.out.println(tmp);
         System.out.println("---------------------   parse file  ------------------------------\n");
         tmp = parser.parseFile(tmp);
         System.out.println(tmp);
@@ -64,8 +73,8 @@ public class ParseTest {
         System.out.println("---------------------   parse html&list  ------------------------------\n");
         tmp = parser.parseHtmlToText(tmp);
         System.out.println(tmp);
-        System.out.println("---------------------   parse quote  ------------------------------\n");
-        tmp = parser.parseQuote(tmp);
+        System.out.println("---------------------   parse block  ------------------------------\n");
+        tmp = parser.parseBlock(tmp);
         System.out.println(tmp);
     }
 }

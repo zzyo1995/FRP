@@ -76,5 +76,8 @@ public class ParseTest {
         System.out.println("---------------------   parse block  ------------------------------\n");
         String[] blocks = parser.parseBlock(tmp);
         System.out.println(blocks.toString());
+        System.out.println("---------------------   parse sentences  ------------------------------\n");
+        tmp = parser.parseSentences(blocks);
+        System.out.println(tmp);
     }
 }

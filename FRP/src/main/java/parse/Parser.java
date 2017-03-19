@@ -63,8 +63,18 @@ public class Parser {
         return blocks;
     }
 
-    public String parseSentences(String[] blocks){
-
+    public String parseSentences(String[] blocks) {
+        int blockIndex = 0;
+        String[] sentences = {};
+        for (String str : blocks) {
+            // can not parse sentences like "the price is 2.3 is a number."
+            sentences = str.split("(\\.|\\?|!|;)(\\s*)(?=[A-Z])");
+            System.out.println("length is :"+sentences.length);
+            for (int j = 0; j < sentences.length; j++) {
+                System.out.println("sentence " + j + "--->" + sentences[j]);
+            }
+            blockIndex++;
+        }
         return "";
     }
 
@@ -196,6 +206,7 @@ public class Parser {
         while (matcher.find()){
             matcher.appendReplacement()
         }*/
+        // code area 自带换行
         origin = origin.replaceAll("(?<!\\$CODE-(.*)?)(?<=>)\\s*(?=<)", "");
         origin = origin.replaceAll("<li>", "<\\$LIST\\$>");
         origin = origin.replaceAll("<p><br><\\/p>", "\n");
@@ -203,6 +214,7 @@ public class Parser {
         origin = origin.replaceAll("<\\/p>", "\n");
         origin = origin.replaceAll("<\\/li>", "\n");
         origin = origin.replaceAll("<[\\/]?[a-z]+>", "");
+        origin = origin.replaceAll("&nbsp;", " ");
         return origin;
     }
 

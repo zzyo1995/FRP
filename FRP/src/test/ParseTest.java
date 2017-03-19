@@ -48,17 +48,17 @@ public class ParseTest {
 
     @Test
     public void testCode(){
-        System.out.println("---------------------parse code-----------------------------\n");
+        System.out.println("---------------------   parse code  -----------------------------\n");
         Parser parser = new Parser();
         String tmp = parser.parseCode(test2);
         System.out.println(tmp);
-        System.out.println("---------------------parse link-----------------------------\n");
+        System.out.println("---------------------   parse link  -----------------------------\n");
         tmp = parser.parseLink(tmp);
         System.out.println(tmp);
-        System.out.println("---------------------parse file------------------------------\n");
+        System.out.println("---------------------   parse file  ------------------------------\n");
         tmp = parser.parseFile(tmp);
         System.out.println(tmp);
-        System.out.println("---------------------parse path------------------------------\n");
+        System.out.println("---------------------   parse path  ------------------------------\n");
         tmp = parser.parsePath(tmp);
         System.out.println(tmp);
     }

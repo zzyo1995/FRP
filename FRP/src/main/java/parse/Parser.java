@@ -75,7 +75,13 @@ public class Parser {
             replacement.setOrigin(href);
             replacement.setReplacement("<$LINK-HTTP$" + linkIndex + ">");
             replacements.add(replacement);
-            link.after(text + "<$LINK-HTTP$" + linkIndex + ">");
+            if(text.matches("(http|https|ftp):\\/\\/.+"))
+            {
+                link.after("<$LINK-HTTP$" + linkIndex + ">");
+            }
+            else{
+                link.after(text + "<$LINK-HTTP$" + linkIndex + ">");
+            }
             link.remove();
             linkIndex++;
         }
@@ -117,7 +123,7 @@ public class Parser {
 
     public String parsePath(String origin) {
         // parse unix path(full path and relative path)     windows path(full path and relative path)    package path
-        String regEx = "(?<!\\<)" +
+        String regEx = "(?<![\\<(http)])" +
                 "(((\\.){0,2}\\/(((\\w*-|\\w*\\.)*\\w+)\\/)*((\\w*-|\\w*\\.)*\\w*))|" +
                 "(((([C-Z]:)|(\\.){0,2})\\\\)(((\\w*-|\\w*\\.)*\\w+)\\\\)*((\\w*-|\\w*\\.)*\\w*))|" +
                 "(([a-zA-Z]+\\.[a-zA-Z]+)[.]*\\w*))" +

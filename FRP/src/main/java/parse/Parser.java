@@ -45,21 +45,23 @@ public class Parser {
         return doc.outerHtml();
     }*/
 
-    public String parseBlock(String origin){
+    public String parseBlock(String origin) {
         Pattern pattern = Pattern.compile("(\\s*?\\n){2,}");
         Matcher matcher = pattern.matcher(origin);
         StringBuffer sb = new StringBuffer();
-        while(matcher.find()){
+        while (matcher.find()) {
             matcher.appendReplacement(sb, "<\\$BLOCK-END\\$>");
         }
         matcher.appendTail(sb);
         origin = sb.toString();
         ArrayList<BlockItem> blockItems = new ArrayList<>();
-        Pattern pattern1 = Pattern.compile("((<\\$BLOCK-END\\$>)|^)(?<block>(\\S+))?(<\\$BLOCK-END\\$>)|$");
-        Matcher matcher1 = pattern1.matcher(origin);
-        while (matcher1.find()){
-            System.out.println(matcher1.group("block"));
+        String[] blocks = origin.split("<\\$BLOCK-END\\$>");
+        for (String str : blocks) {
+            BlockItem blockItem = new BlockItem();
+
+            System.out.println("block--->" + str);
         }
+        System.out.println("------------------------------------------------");
         return origin;
     }
 
@@ -69,19 +71,21 @@ public class Parser {
         Pattern pattern = Pattern.compile(" ");
         int codeIndex = 0;
         for (Element code : codes) {
+            //System.out.println(code.html());
             String originCode = code.text();
             String codeType = pattern.split(code.className())[0];
-            codeType = "<\\$CODE-" + codeType.toUpperCase() + "\\$" + codeIndex + ">";
+            codeType = "<$CODE-" + codeType.toUpperCase() + "$" + codeIndex + ">";
             Replacement replacement = new Replacement();
             replacement.setOrigin(originCode);
             replacement.setReplacement(codeType);
             replacements.add(replacement);
+            code.text(codeType);
             //System.out.println(originCode+"\n"+codeType);
             code.parent().after(codeType);
             code.parent().remove();
             codeIndex++;
         }
-        return doc.outerHtml();
+        return doc.html();
     }
 
     /***
@@ -100,17 +104,20 @@ public class Parser {
             String text = link.text();
             Replacement replacement = new Replacement();
             replacement.setOrigin(href);
-            replacement.setReplacement("<\\$LINK-HTTP\\$" + linkIndex + ">");
+            replacement.setReplacement("<$LINK-HTTP$" + linkIndex + ">");
             replacements.add(replacement);
             if (text.matches("(http|https|ftp):\\/\\/.+")) {
-                link.after("<\\$LINK-HTTP\\$" + linkIndex + ">");
+                link.after("<$LINK-HTTP$" + linkIndex + ">");
             } else {
-                link.after(text + "<\\$LINK-HTTP\\$" + linkIndex + ">");
+                link.after(text + "<$LINK-HTTP$" + linkIndex + ">");
             }
             link.remove();
             linkIndex++;
         }
-        return doc.outerHtml();
+        origin = doc.outerHtml();
+        origin = origin.replaceAll("&lt;\\$", "<\\$");
+        origin = origin.replaceAll("&gt;", ">");
+        return origin;
     }
 
     public String parseFile(String origin) {
@@ -256,7 +263,7 @@ public class Parser {
                 while (matcher.find()) {
                     String str = matcher.group(0);
                     String blank = matcher.group(1);
-                    String type = replace[i] + shortIndex;
+                    String type = replace[i] + "\\$" + shortIndex + "\\$";
                     System.out.println(str + "  " + type);
                     Replacement replacement = new Replacement();
                     replacement.setOrigin(str);

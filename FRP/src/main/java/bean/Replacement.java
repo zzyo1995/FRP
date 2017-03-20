@@ -12,6 +12,12 @@ public class Replacement {
     public Replacement() {
     }
 
+    public Replacement(String replacement, String origin, int indexOfReplace) {
+        this.replacement = replacement;
+        this.origin = origin;
+        this.indexOfReplace = indexOfReplace;
+    }
+
     public String getReplacement() {
         return replacement;
     }
@@ -34,5 +40,14 @@ public class Replacement {
 
     public void setIndexOfReplace(int indexOfReplace) {
         this.indexOfReplace = indexOfReplace;
+    }
+
+    @Override
+    public String toString() {
+        return "Replacement{" +
+                "replacement='" + replacement + '\'' +
+                ", origin='" + origin + '\'' +
+                ", indexOfReplace=" + indexOfReplace +
+                "}\n";
     }
 }

@@ -81,7 +81,9 @@ public class ParseTest {
         String[] blocks = parser.parseBlock(tmp);
         System.out.println(blocks.toString());
         System.out.println("---------------------   parse sentences  ------------------------------\n");
+        System.out.println(parser.getReplacementMap());
         ArrayList<BlockItem> blockItems = parser.parseSentences(blocks);
+        blockItems = parser.parseReplacement(blockItems);
         for(BlockItem blockItem : blockItems){
             System.out.println("------------------   block start   --------------------------------");
             for(Sentence sentence : blockItem.getSentences()){
@@ -97,6 +99,15 @@ public class ParseTest {
                 System.out.println("-----------------------   sentence end   ----------------------------\n");
             }
             System.out.println("------------------------   block end   -----------------------------\n\n");
+        }
+    }
+
+    @Test
+    public void tokenTest(){
+        String content = "it would be nice if the compiler emitted an error, since the two situations can be confusingly similar:example = <CODE>";
+        String[] tokens = Parser.getTokens(content);
+        for(String token : tokens){
+            System.out.println(token);
         }
     }
 }

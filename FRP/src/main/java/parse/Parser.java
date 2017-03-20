@@ -1,17 +1,21 @@
 package main.java.parse;
 
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.process.CoreLabelTokenFactory;
+import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.process.Tokenizer;
+import edu.stanford.nlp.process.TokenizerFactory;
 import main.java.bean.BlockItem;
 import main.java.bean.FR;
 import main.java.bean.Replacement;
 import main.java.bean.Sentence;
 import org.jsoup.Jsoup;
-import org.jsoup.examples.HtmlToPlainText;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.StringReader;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +28,8 @@ public class Parser {
     //private String origin;
     //private String result;
     private FR fr;
-    private ArrayList<Replacement> replacements = new ArrayList<>();
+    //private ArrayList<Replacement> replacements = new ArrayList<>();
+    private Map<String, Replacement> replacementMap = new HashMap<>();
     //private ArrayList<Sentence> sentences = new ArrayList<>();
 
     public Parser() {
@@ -85,7 +90,7 @@ public class Parser {
                                 String list = sentenceArrayList.get(j).replaceFirst("<\\$LIST\\$>", "");
                                 Sentence itemList = new Sentence();
                                 itemList.setOrigin(list);
-                                itemList.setResult(list);
+                                itemList.setResult(list.replaceAll("\\$\\d+>", "\\$>"));
                                 sentence = blockItem.getSentences().get(blockItem.getSentences().size() - 1);
                                 sentence.setOrigin(sentence.getOrigin().concat("\n" + list));
                                 sentence.addItemList(itemList);
@@ -93,18 +98,77 @@ public class Parser {
                                 i = j;
                             } else break;
                         }
-                    }
-                    else{
+                    } else {
                         // 如果是   str.\n   1，～2.～3.～ 修改?
                     }
-                }
-                else{
+                } else {
                     sentence.setOrigin(sentenceArrayList.get(i));
-                    sentence.setResult(sentenceArrayList.get(i));
+                    sentence.setResult(sentenceArrayList.get(i).replaceAll("\\$\\d+>", "\\$>"));
                     blockItem.addSentence(sentence);
                 }
             }
             blockItems.add(blockItem);
+        }
+        return blockItems;
+    }
+
+    public static List<CoreLabel> getRawWords(String text) {
+        TokenizerFactory<CoreLabel> tokenizerFactory = PTBTokenizer.factory(new CoreLabelTokenFactory(), "");
+        Tokenizer<CoreLabel> tok = tokenizerFactory.getTokenizer(new StringReader(text));
+        List<CoreLabel> rawWords = tok.tokenize();
+        return rawWords;
+    }
+
+    public static String[] getTokens(String content) {
+        List<CoreLabel> words = getRawWords(content);
+        String[] results = new String[words.size()];
+        for (int i = 0; i < words.size(); i++)
+            results[i] = words.get(i).word();
+        return results;
+    }
+
+    public static int getTokenIndex(String str, String token) {
+        String[] results = getTokens(str);
+        for (int i = 0; i < results.length; i++) {
+            if (token.equals(results[i])) ;
+            return i;
+        }
+        return -1;
+    }
+
+    public Sentence updateSentence(Sentence sentence) {
+        StringBuffer sb = new StringBuffer();
+        String origin = sentence.getOrigin();
+        Pattern pattern = Pattern.compile("<\\$.+?\\$\\d{0,2}>");
+        Matcher matcher = pattern.matcher(origin);
+        while (matcher.find()) {
+            String type = matcher.group(0);
+            Replacement replacement = this.replacementMap.get(type);
+            //System.out.println(replacement.toString());
+            replacement.setIndexOfReplace(getTokenIndex(origin, type));
+            sentence.addReplacements(replacement);
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement.getOrigin()));
+        }
+        matcher.appendTail(sb);
+        sentence.setOrigin(sb.toString());
+        sb.setLength(0);
+        return sentence;
+    }
+
+    public ArrayList<BlockItem> parseReplacement(ArrayList<BlockItem> blockItems) {
+        // change sentence.origin to origin text
+        //set Replacement List in Sentence
+        // set index of replacement
+        for (int i = 0; i < blockItems.size(); i++) {
+            BlockItem blockItem = blockItems.get(i);
+            for (int j = 0; j < blockItem.getSentences().size(); j++) {
+                Sentence sentence = blockItem.getSentences().get(j);
+                blockItems.get(i).getSentences().set(j, updateSentence(sentence));
+                for (int k = 0; k < sentence.getItemLists().size(); k++) {
+                    Sentence sentence1 = sentence.getItemLists().get(k);
+                    blockItems.get(i).getSentences().get(j).getItemLists().set(k, updateSentence(sentence1));
+                }
+            }
         }
         return blockItems;
     }
@@ -118,14 +182,14 @@ public class Parser {
             //System.out.println(code.html());
             String originCode = code.text();
             String codeType = pattern.split(code.className())[0];
-            codeType = "<$CODE-" + codeType.toUpperCase() + "$" + codeIndex + ">";
+            String type = "<$CODE-" + codeType.toUpperCase() + "$" + codeIndex + ">";
             Replacement replacement = new Replacement();
             replacement.setOrigin(originCode);
-            replacement.setReplacement(codeType);
-            replacements.add(replacement);
-            code.text(codeType);
+            replacement.setReplacement("<$CODE-" + codeType.toUpperCase() + "$>");
+            this.replacementMap.put(type, replacement);
+            //code.text(codeType);
             //System.out.println(originCode+"\n"+codeType);
-            code.parent().after(codeType);
+            code.parent().after(type);
             code.parent().remove();
             codeIndex++;
         }
@@ -146,20 +210,21 @@ public class Parser {
         for (Element link : links) {
             String href = link.attr("href");
             String text = link.text();
+            String type = "<$LINK-HTTP$" + linkIndex + ">";
             Replacement replacement = new Replacement();
             replacement.setOrigin(href);
-            replacement.setReplacement("<$LINK-HTTP$" + linkIndex + ">");
-            replacements.add(replacement);
+            replacement.setReplacement("<$LINK-HTTP$>");
+            this.replacementMap.put(type, replacement);
             if (text.matches("(http|https|ftp):\\/\\/.+")) {
-                link.after("<$LINK-HTTP$" + linkIndex + ">");
+                link.after(type);
             } else {
-                link.after(text + "<$LINK-HTTP$" + linkIndex + ">");
+                link.after(text + type);
             }
             link.remove();
             linkIndex++;
         }
         origin = doc.outerHtml();
-        origin = origin.replaceAll("&lt;\\$", "<\\$");
+        origin = origin.replaceAll("&lt;", "<");
         origin = origin.replaceAll("&gt;", ">");
         return origin;
     }
@@ -185,8 +250,8 @@ public class Parser {
                 System.out.println(path + "  " + type);
                 Replacement replacement = new Replacement();
                 replacement.setOrigin(path);
-                replacement.setReplacement(type);
-                replacements.add(replacement);
+                replacement.setReplacement("<$FILE-" + fileTypes[index].toUpperCase() + "$>");
+                this.replacementMap.put("<$FILE-" + fileTypes[index].toUpperCase() + "$" + fileIndex + ">", replacement);
                 matcher.appendReplacement(sb, type);
                 fileIndex++;
             }
@@ -214,13 +279,13 @@ public class Parser {
         Matcher matcher = pattern.matcher(origin);
         while (matcher.find()) {
             String path = matcher.group(0);
-            String type = "<\\$PATH-\\$" + pathIndex + ">";
+            String type = "<\\$PATH\\$" + pathIndex + ">";
             //type = Matcher.quoteReplacement(type);
             System.out.println(path + "   " + type);
             Replacement replacement = new Replacement();
             replacement.setOrigin(path);
-            replacement.setReplacement(type);
-            replacements.add(replacement);
+            replacement.setReplacement("<$PATH$>");
+            this.replacementMap.put("<$PATH$" + pathIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             pathIndex++;
         }
@@ -231,12 +296,6 @@ public class Parser {
     }
 
     public String parseHtmlToText(String origin) {
-        /*Pattern pattern = Pattern.compile(">(\\s*)<");
-        Matcher matcher = pattern.matcher(origin);
-        StringBuffer sb = new StringBuffer();
-        while (matcher.find()){
-            matcher.appendReplacement()
-        }*/
         // code area 自带换行
         origin = origin.replaceAll("(?<!\\$CODE-(.*)?)(?<=>)\\s*(?=<)", "");
         origin = origin.replaceAll("<li>", "<\\$LIST\\$>");
@@ -262,8 +321,8 @@ public class Parser {
             System.out.println(quote + "    " + type);
             Replacement replacement = new Replacement();
             replacement.setOrigin(quote);
-            replacement.setReplacement(type);
-            replacements.add(replacement);
+            replacement.setReplacement("<$QUOTE$>");
+            this.replacementMap.put("<$QUOTE$" + quoteIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             quoteIndex++;
         }
@@ -286,8 +345,8 @@ public class Parser {
             System.out.println(email + "    " + type);
             Replacement replacement = new Replacement();
             replacement.setOrigin(email);
-            replacement.setReplacement(type);
-            replacements.add(replacement);
+            replacement.setReplacement("<$EMAIL$>");
+            this.replacementMap.put("<$EMAIL$" + emailIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             emailIndex++;
         }
@@ -309,12 +368,12 @@ public class Parser {
                 while (matcher.find()) {
                     String str = matcher.group(0);
                     String blank = matcher.group(1);
-                    String type = replace[i] + "\\$" + shortIndex + "\\$";
+                    String type = "<\\$" + replace[i] + "\\$" + shortIndex + ">";
                     System.out.println(str + "  " + type);
                     Replacement replacement = new Replacement();
                     replacement.setOrigin(str);
-                    replacement.setReplacement(type);
-                    replacements.add(replacement);
+                    replacement.setReplacement(replace[i]);
+                    this.replacementMap.put("<$" + replace[i] + "$" + shortIndex + ">", replacement);
                     matcher.appendReplacement(sb, type + blank);
                     shortIndex++;
                 }
@@ -326,26 +385,8 @@ public class Parser {
         return origin;
     }
 
-    public String parseList(String origin) {
-        Document doc = Jsoup.parse(origin);
-        Elements ulLists = doc.select("ul");
-        Elements olLists = doc.select("ol");
-        for (Element ulList : ulLists) {
-            Elements lists = ulList.select("li");
-            for (Element list : lists) {
-                //list.tagName("ULIST");
-            }
-        }
-        for (Element olList : olLists) {
-            Elements lists = olList.select("li");
-            for (Element list : lists) {
-                //list.tagName("OLIST");
-            }
-        }
-        //return doc.outerHtml();
-        HtmlToPlainText htmlToPlainText = new HtmlToPlainText();
-        return htmlToPlainText.getPlainText(doc);
+    public Map<String, Replacement> getReplacementMap(){
+        return this.replacementMap;
     }
-
 
 }

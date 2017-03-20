@@ -52,6 +52,9 @@ public class Parser {
     }*/
 
     public String[] parseBlock(String origin) {
+        //origin = origin.replaceAll("<\\$", "<");
+        //origin = origin.replaceAll("\\$>", ">");
+        System.out.println(origin);
         Pattern pattern = Pattern.compile("(\\s*?\\n){2,}");
         Matcher matcher = pattern.matcher(origin);
         StringBuffer sb = new StringBuffer();
@@ -90,7 +93,7 @@ public class Parser {
                                 String list = sentenceArrayList.get(j).replaceFirst("<\\$LIST\\$>", "");
                                 Sentence itemList = new Sentence();
                                 itemList.setOrigin(list);
-                                itemList.setResult(list.replaceAll("\\$\\d+>", "\\$>"));
+                                itemList.setResult(list);
                                 sentence = blockItem.getSentences().get(blockItem.getSentences().size() - 1);
                                 sentence.setOrigin(sentence.getOrigin().concat("\n" + list));
                                 sentence.addItemList(itemList);
@@ -103,7 +106,7 @@ public class Parser {
                     }
                 } else {
                     sentence.setOrigin(sentenceArrayList.get(i));
-                    sentence.setResult(sentenceArrayList.get(i).replaceAll("\\$\\d+>", "\\$>"));
+                    sentence.setResult(sentenceArrayList.get(i));
                     blockItem.addSentence(sentence);
                 }
             }
@@ -128,10 +131,14 @@ public class Parser {
     }
 
     public static int getTokenIndex(String str, String token) {
+        System.out.println("Str is--->" + str);
         String[] results = getTokens(str);
         for (int i = 0; i < results.length; i++) {
-            if (token.equals(results[i])) ;
-            return i;
+            System.out.println("Result is--->" + results[i]+"Token is--->"+token);
+            if (token.equals(results[i])) {
+                System.out.println("TokenIndex is--->" + i);
+                return i;
+            }
         }
         return -1;
     }
@@ -139,19 +146,33 @@ public class Parser {
     public Sentence updateSentence(Sentence sentence) {
         StringBuffer sb = new StringBuffer();
         String origin = sentence.getOrigin();
+        String tmp = origin;
+        int flag = 0;
         Pattern pattern = Pattern.compile("<\\$.+?\\$\\d{0,2}>");
         Matcher matcher = pattern.matcher(origin);
         while (matcher.find()) {
+            flag = 1;
             String type = matcher.group(0);
             Replacement replacement = this.replacementMap.get(type);
             //System.out.println(replacement.toString());
-            replacement.setIndexOfReplace(getTokenIndex(origin, type));
+            String content = type.replaceAll("\\$", "");
+            tmp = tmp.replaceFirst(Matcher.quoteReplacement(type), content);
+            int tokenIndex = getTokenIndex(tmp, content);
+            System.out.println("TYPE is--->"+type+"TMP is --->"+tmp);
+            System.out.println("Token index is--->" + tokenIndex);
+            replacement.setIndexOfReplace(tokenIndex);
             sentence.addReplacements(replacement);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement.getOrigin()));
         }
-        matcher.appendTail(sb);
-        sentence.setOrigin(sb.toString());
-        sb.setLength(0);
+        if(flag == 1){
+            matcher.appendTail(sb);
+            sentence.setOrigin(sb.toString());
+            sb.setLength(0);
+        }
+        String result = sentence.getResult();
+        result = result.replaceAll("<\\$", "<");
+        result = result.replaceAll("\\$\\d{0,2}>", ">");
+        sentence.setResult(result);
         return sentence;
     }
 
@@ -185,7 +206,7 @@ public class Parser {
             String type = "<$CODE-" + codeType.toUpperCase() + "$" + codeIndex + ">";
             Replacement replacement = new Replacement();
             replacement.setOrigin(originCode);
-            replacement.setReplacement("<$CODE-" + codeType.toUpperCase() + "$>");
+            replacement.setReplacement("<CODE-" + codeType.toUpperCase() + ">");
             this.replacementMap.put(type, replacement);
             //code.text(codeType);
             //System.out.println(originCode+"\n"+codeType);
@@ -213,7 +234,7 @@ public class Parser {
             String type = "<$LINK-HTTP$" + linkIndex + ">";
             Replacement replacement = new Replacement();
             replacement.setOrigin(href);
-            replacement.setReplacement("<$LINK-HTTP$>");
+            replacement.setReplacement("<LINK-HTTP>");
             this.replacementMap.put(type, replacement);
             if (text.matches("(http|https|ftp):\\/\\/.+")) {
                 link.after(type);
@@ -250,7 +271,7 @@ public class Parser {
                 System.out.println(path + "  " + type);
                 Replacement replacement = new Replacement();
                 replacement.setOrigin(path);
-                replacement.setReplacement("<$FILE-" + fileTypes[index].toUpperCase() + "$>");
+                replacement.setReplacement("<FILE-" + fileTypes[index].toUpperCase() + ">");
                 this.replacementMap.put("<$FILE-" + fileTypes[index].toUpperCase() + "$" + fileIndex + ">", replacement);
                 matcher.appendReplacement(sb, type);
                 fileIndex++;
@@ -284,7 +305,7 @@ public class Parser {
             System.out.println(path + "   " + type);
             Replacement replacement = new Replacement();
             replacement.setOrigin(path);
-            replacement.setReplacement("<$PATH$>");
+            replacement.setReplacement("<PATH>");
             this.replacementMap.put("<$PATH$" + pathIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             pathIndex++;
@@ -321,7 +342,7 @@ public class Parser {
             System.out.println(quote + "    " + type);
             Replacement replacement = new Replacement();
             replacement.setOrigin(quote);
-            replacement.setReplacement("<$QUOTE$>");
+            replacement.setReplacement("<QUOTE>");
             this.replacementMap.put("<$QUOTE$" + quoteIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             quoteIndex++;
@@ -345,7 +366,7 @@ public class Parser {
             System.out.println(email + "    " + type);
             Replacement replacement = new Replacement();
             replacement.setOrigin(email);
-            replacement.setReplacement("<$EMAIL$>");
+            replacement.setReplacement("<EMAIL>");
             this.replacementMap.put("<$EMAIL$" + emailIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             emailIndex++;
@@ -358,7 +379,7 @@ public class Parser {
 
     public String parseShort(String origin) {
         String[][] shorts = {{"\\be\\.g(\\s)", "\\be\\.g.(\\s)", "(\\b)eg(\\s)", "\\beg\\.(\\s)", "\\bi\\.e.(\\s)", "\\bi\\.e(\\s)"}, {"\\.NET(.?)"}, {"\\bImo(\\s)"}};
-        String[] replace = {"For example", "dotNET", "In my opinion"};
+        String[] replace = {"for example", "dotNET", "in my opinion"};
         StringBuffer sb = new StringBuffer();
         int shortIndex = 0;
         for (int i = 0; i < shorts.length; i++) {
@@ -385,7 +406,7 @@ public class Parser {
         return origin;
     }
 
-    public Map<String, Replacement> getReplacementMap(){
+    public Map<String, Replacement> getReplacementMap() {
         return this.replacementMap;
     }
 

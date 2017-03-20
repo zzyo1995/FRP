@@ -90,10 +90,12 @@ public class ParseTest {
                 System.out.println("--------------------   sentence start   -------------------------");
                 System.out.println("Origin is--->"+sentence.getOrigin());
                 System.out.println("Result is--->"+sentence.getResult());
+                System.out.println("Replace is--->"+sentence.getReplacements().toString());
                 for(Sentence sentence1 : sentence.getItemLists()){
                     System.out.println("        ---------------------------   list sentence start   --------------------");
                     System.out.println("Origin is--->"+sentence1.getOrigin());
                     System.out.println("Result is--->"+sentence1.getResult());
+                    System.out.println("Replace is--->"+sentence1.getReplacements().toString());
                     System.out.println("        ----------------------------   list sentence end   ---------------------\n");
                 }
                 System.out.println("-----------------------   sentence end   ----------------------------\n");
@@ -104,10 +106,13 @@ public class ParseTest {
 
     @Test
     public void tokenTest(){
-        String content = "it would be nice if the compiler emitted an error, since the two situations can be confusingly similar:example = <CODE>";
+        String content = "<For example0><$For example$1><$For example$2><$dotNET$3><$In my opinion$4>";
         String[] tokens = Parser.getTokens(content);
         for(String token : tokens){
             System.out.println(token);
+            if(token.equals("<For example0>")){
+                System.out.println("匹配:-->"+token);
+            }
         }
     }
 }

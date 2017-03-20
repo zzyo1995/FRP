@@ -9,8 +9,8 @@ public class Sentence {
 
     private String origin;
     private String result;
-    private ArrayList<Sentence> itemLists;
-    private ArrayList<Replacement> replacements;
+    private ArrayList<Sentence> itemLists = new ArrayList<>();
+    private ArrayList<Replacement> replacements = new ArrayList<>();
 
     public Sentence() {
     }

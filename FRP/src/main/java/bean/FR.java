@@ -9,7 +9,7 @@ public class FR {
 
     private String systemName;
     private String title;
-    private ArrayList<BlockItem> blockItems;
+    private ArrayList<BlockItem> blockItems = new ArrayList<>();
 
 
     public FR() {

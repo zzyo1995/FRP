@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,19 +64,49 @@ public class Parser {
         return blocks;
     }
 
-    public String parseSentences(String[] blocks) {
-        int blockIndex = 0;
-        String[] sentences = {};
+    public ArrayList<BlockItem> parseSentences(String[] blocks) {
+        ArrayList<BlockItem> blockItems = new ArrayList<>();
         for (String str : blocks) {
+            BlockItem blockItem = new BlockItem();
+            String[] sentences = {};
             // can not parse sentences like "the price is 2.3 is a number."
             sentences = str.split("((\\.|\\?|\\!)((\\s*)|(?=[A-Z])))|(\\n)");
-            System.out.println("length is :"+sentences.length);
-            for (int j = 0; j < sentences.length; j++) {
-                System.out.println("sentence " + j + "--->" + sentences[j]);
+            ArrayList<String> sentenceArrayList = new ArrayList<String>(Arrays.asList(sentences));
+            //System.out.println("length is :" + sentences.length);
+            for (int i = 0; i < sentenceArrayList.size(); i++) {
+                Sentence sentence = new Sentence();
+                //System.out.println("sentence --->" + sentenceArrayList.get(i));
+                if (sentenceArrayList.get(i).matches("^<\\$LIST\\$>.*")) {
+                    if (sentenceArrayList.get(i - 1).matches(".*:$")) {
+                        // 如果是  str：\n 1，～2.～3.～ 修改上个sentence:(addItmList,setOrigin)
+                        //System.out.println("LISTS START:------->");
+                        for (int j = i; j < sentenceArrayList.size(); j++) {
+                            if (sentenceArrayList.get(j).matches("^<\\$LIST\\$>.*")) {
+                                String list = sentenceArrayList.get(j).replaceFirst("<\\$LIST\\$>", "");
+                                Sentence itemList = new Sentence();
+                                itemList.setOrigin(list);
+                                itemList.setResult(list);
+                                sentence = blockItem.getSentences().get(blockItem.getSentences().size() - 1);
+                                sentence.setOrigin(sentence.getOrigin().concat("\n" + list));
+                                sentence.addItemList(itemList);
+                                //System.out.println("LIST--->" + list);
+                                i = j;
+                            } else break;
+                        }
+                    }
+                    else{
+                        // 如果是   str.\n   1，～2.～3.～ 修改?
+                    }
+                }
+                else{
+                    sentence.setOrigin(sentenceArrayList.get(i));
+                    sentence.setResult(sentenceArrayList.get(i));
+                    blockItem.addSentence(sentence);
+                }
             }
-            blockIndex++;
+            blockItems.add(blockItem);
         }
-        return "";
+        return blockItems;
     }
 
     public String parseCode(String origin) {

@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class BlockItem {
 
-    private ArrayList<Sentence> sentences;
+    private ArrayList<Sentence> sentences = new ArrayList<>();
 
     public BlockItem() {
     }

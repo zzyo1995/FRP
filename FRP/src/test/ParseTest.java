@@ -1,7 +1,11 @@
 package test;
 
+import main.java.bean.BlockItem;
+import main.java.bean.Sentence;
 import main.java.parse.Parser;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 /**
  * Created by zzyo on 2017/3/17.
@@ -44,7 +48,7 @@ public class ParseTest {
             "                        location.href = data;\n" +
             "                    }\n" +
             "                }\n" +
-            "        );<br></code></pre><p><br></p><p><br></p><p>this is a list:</p><ol><li>move&nbsp;the&nbsp;code&nbsp;which&nbsp;finds&nbsp;$tmp_subdir&nbsp;from&nbsp;file.php&nbsp;to&nbsp;configfile.php</li><li>call&nbsp;this&nbsp;function&nbsp;in&nbsp;both&nbsp;file.php&nbsp;and&nbsp;Encoding.php</li><li>right&nbsp;zzyo1995@qq.com?</li><li>Can&nbsp;i&nbsp;also&nbsp;align&nbsp;the&nbsp;parenthesis&nbsp;a&nbsp;756257660@qq.combit&nbsp;as&nbsp;it&nbsp;doesn't&nbsp;look&nbsp;that&nbsp;good&nbsp;?</li><li>Also&nbsp;I&nbsp;have&nbsp;to&nbsp;move&nbsp;it&nbsp;to&nbsp;ConfigFile.php&nbsp;right&nbsp;?</li></ol><div><br></div><div></div><p>Yes,zzyo@hust.edu.cn&nbsp;C:\\project\\classes;&nbsp;  core.java.util;&nbsp; /ext-name/&nbsp; ./&nbsp; /var/cache/mopidy&nbsp;please&nbsp;use&nbsp;coding&nbsp;style&nbsp;as&nbsp;described&nbsp;in&nbsp;our&nbsp;docs:&nbsp;<p>e.g e.g. i.e .NET Imo </p><a href=\"https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style\" target=\"_blank\">https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style</a><p><br></p>";
+            "        );<br></code></pre><p><br></p><p><br></p><p>this is a list:</p><ol><li>move&nbsp;the&nbsp;code&nbsp;which&nbsp;finds&nbsp;$tmp_subdir&nbsp;from&nbsp;file.php&nbsp;to&nbsp;configfile.php</li><li>call&nbsp;this&nbsp;function&nbsp;in&nbsp;both&nbsp;file.php&nbsp;and&nbsp;Encoding.php</li><li>right&nbsp;zzyo1995@qq.com?</li><li>Can&nbsp;i&nbsp;also&nbsp;align&nbsp;the&nbsp;parenthesis&nbsp;a&nbsp;756257660@qq.combit&nbsp;as&nbsp;it&nbsp;doesn't&nbsp;look&nbsp;that&nbsp;good&nbsp;?</li><li>Also&nbsp;I&nbsp;have&nbsp;to&nbsp;move&nbsp;it&nbsp;to&nbsp;ConfigFile.php&nbsp;right&nbsp;?</li></ol><p>this is a list end.</p><div><br></div><div></div><p>Yes,zzyo@hust.edu.cn&nbsp;C:\\project\\classes;&nbsp;  core.java.util;&nbsp; /ext-name/&nbsp; ./&nbsp; /var/cache/mopidy&nbsp;please&nbsp;use&nbsp;coding&nbsp;style&nbsp;as&nbsp;described&nbsp;in&nbsp;our&nbsp;docs:&nbsp;<p>e.g e.g. i.e .NET Imo </p><a href=\"https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style\" target=\"_blank\">https://github.com/phpmyadmin/phpmyadmin/wiki/Developer_guidelines#coding-style</a><p><br></p>";
 
     @Test
     public void testCode(){
@@ -77,7 +81,22 @@ public class ParseTest {
         String[] blocks = parser.parseBlock(tmp);
         System.out.println(blocks.toString());
         System.out.println("---------------------   parse sentences  ------------------------------\n");
-        tmp = parser.parseSentences(blocks);
-        System.out.println(tmp);
+        ArrayList<BlockItem> blockItems = parser.parseSentences(blocks);
+        for(BlockItem blockItem : blockItems){
+            System.out.println("------------------   block start   --------------------------------");
+            for(Sentence sentence : blockItem.getSentences()){
+                System.out.println("--------------------   sentence start   -------------------------");
+                System.out.println("Origin is--->"+sentence.getOrigin());
+                System.out.println("Result is--->"+sentence.getResult());
+                for(Sentence sentence1 : sentence.getItemLists()){
+                    System.out.println("        ---------------------------   list sentence start   --------------------");
+                    System.out.println("Origin is--->"+sentence1.getOrigin());
+                    System.out.println("Result is--->"+sentence1.getResult());
+                    System.out.println("        ----------------------------   list sentence end   ---------------------\n");
+                }
+                System.out.println("-----------------------   sentence end   ----------------------------\n");
+            }
+            System.out.println("------------------------   block end   -----------------------------\n\n");
+        }
     }
 }

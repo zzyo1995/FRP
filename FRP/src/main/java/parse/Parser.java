@@ -68,7 +68,7 @@ public class Parser {
         String[] sentences = {};
         for (String str : blocks) {
             // can not parse sentences like "the price is 2.3 is a number."
-            sentences = str.split("(\\.|\\?|!|;)(\\s*)(?=[A-Z])");
+            sentences = str.split("((\\.|\\?|\\!)((\\s*)|(?=[A-Z])))|(\\n)");
             System.out.println("length is :"+sentences.length);
             for (int j = 0; j < sentences.length; j++) {
                 System.out.println("sentence " + j + "--->" + sentences[j]);

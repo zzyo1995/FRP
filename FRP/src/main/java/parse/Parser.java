@@ -25,12 +25,7 @@ import java.util.regex.Pattern;
 public class Parser {
 
 
-    //private String origin;
-    //private String result;
-    private FR fr;
-    //private ArrayList<Replacement> replacements = new ArrayList<>();
     private Map<String, Replacement> replacementMap = new HashMap<>();
-    //private ArrayList<Sentence> sentences = new ArrayList<>();
 
     public Parser() {
     }
@@ -65,8 +60,16 @@ public class Parser {
         origin = sb.toString();
         ArrayList<BlockItem> blockItems = new ArrayList<>();
         String[] blocks = origin.split("<\\$BLOCK-END\\$>");
-        for (String str : blocks) {
-            System.out.println("block--->" + str);
+        for (int i = 0; i < blocks.length; i++) {
+            if (blocks[i].matches("^<\\$CODE-.+>$")) {
+                blocks[i - 1] = blocks[i - 1].concat("\n" + blocks[i] + "\n");
+                int index = i;
+                for (; index < blocks.length - 1; index++) {
+                    blocks[index] = blocks[index + 1];
+                }
+                blocks[index] = "";
+            }
+            System.out.println("block--->" + blocks[i]);
         }
         System.out.println("------------------------------------------------");
         return blocks;
@@ -134,7 +137,7 @@ public class Parser {
         System.out.println("Str is--->" + str);
         String[] results = getTokens(str);
         for (int i = 0; i < results.length; i++) {
-            System.out.println("Result is--->" + results[i]+"Token is--->"+token);
+            System.out.println("Result is--->" + results[i] + "Token is--->" + token);
             if (token.equals(results[i])) {
                 System.out.println("TokenIndex is--->" + i);
                 return i;
@@ -158,13 +161,13 @@ public class Parser {
             String content = type.replaceAll("\\$", "");
             tmp = tmp.replaceFirst(Matcher.quoteReplacement(type), content);
             int tokenIndex = getTokenIndex(tmp, content);
-            System.out.println("TYPE is--->"+type+"TMP is --->"+tmp);
+            System.out.println("TYPE is--->" + type + "TMP is --->" + tmp);
             System.out.println("Token index is--->" + tokenIndex);
             replacement.setIndexOfReplace(tokenIndex);
             sentence.addReplacements(replacement);
             matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement.getOrigin()));
         }
-        if(flag == 1){
+        if (flag == 1) {
             matcher.appendTail(sb);
             sentence.setOrigin(sb.toString());
             sb.setLength(0);

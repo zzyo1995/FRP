@@ -138,6 +138,7 @@ public class Parser {
         String[] results = getTokens(str);
         for (int i = 0; i < results.length; i++) {
             System.out.println("Result is--->" + results[i] + "Token is--->" + token);
+            token = getTokens(token)[0];
             if (token.equals(results[i])) {
                 System.out.println("TokenIndex is--->" + i);
                 return i;
@@ -413,4 +414,39 @@ public class Parser {
         return this.replacementMap;
     }
 
+    public String parseExe(String raw) {
+        Parser parser = new Parser();
+        String tmp = parser.parseCode(raw);
+        tmp = parser.parseLink(tmp);
+        tmp = parser.parseEmail(tmp);
+        tmp = parser.parseQuote(tmp);
+        tmp = parser.parseShort(tmp);
+        tmp = parser.parseFile(tmp);
+        tmp = parser.parsePath(tmp);
+        tmp = parser.parseHtmlToText(tmp);
+        String[] blocks = parser.parseBlock(tmp);
+        ArrayList<BlockItem> blockItems = parser.parseSentences(blocks);
+        blockItems = parser.parseReplacement(blockItems);
+        String result = "";
+        for (BlockItem blockItem : blockItems) {
+            result = result.concat("\n------------------   block start   --------------------------------\n\n");
+
+            for (Sentence sentence : blockItem.getSentences()) {
+                result = result.concat("\n--------------------   sentence start   -------------------------\n");
+                result = result.concat("\nOrigin is--->" + sentence.getOrigin()+"\n");
+                result = result.concat("\nResult is--->" + sentence.getResult()+"\n");
+                result = result.concat("\nReplace is--->" + sentence.getReplacements().toString()+"\n");
+                for (Sentence sentence1 : sentence.getItemLists()) {
+                    result = result.concat("\n        ---------------------------   list sentence start   --------------------\n");
+                    result = result.concat("\n        Origin is--->" + sentence1.getOrigin()+"\n");
+                    result = result.concat("\n        Result is--->" + sentence1.getResult()+"\n");
+                    result = result.concat("\n        Replace is--->" + sentence1.getReplacements().toString()+"\n");
+                    result = result.concat("\n        ----------------------------   list sentence end   ---------------------\n");
+                }
+                result = result.concat("\n-----------------------   sentence end   ----------------------------\n");
+            }
+            result  = result.concat("\n------------------------   block end   -----------------------------\n\n");
+        }
+        return result;
+    }
 }

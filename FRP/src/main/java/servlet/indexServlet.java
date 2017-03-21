@@ -20,11 +20,17 @@ public class indexServlet extends HttpServlet {
         String FRTitle = request.getParameter("FRTitle");
         String FRDes = request.getParameter("FRDes");
         Parser parser = new Parser();
-        parser.parseCode(FRDes);
+        //parser.parseCode(FRDes);
         System.out.println(name + "\n\n\n\n\n" +
                 FRTitle + "\n\n\n\n\n" +
                 FRDes
         );
+        String raw = FRDes;
+        String result = parser.parseExe(raw);
+        System.out.println(result);
+        request.setAttribute("parseResult", result);
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/show.jsp");
+        rd.forward(request, response);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

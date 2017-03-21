@@ -41,7 +41,7 @@ public class FR {
         return blockItems;
     }
 
-    public void addBlockItem(BlockItem blockItems) {
-        this.blockItems.add(blockItems);
+    public void setBlockItems(ArrayList<BlockItem> blockItems) {
+        this.blockItems = blockItems;
     }
 }

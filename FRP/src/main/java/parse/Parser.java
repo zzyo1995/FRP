@@ -323,6 +323,9 @@ public class Parser {
     public String parseHtmlToText(String origin) {
         // code area 自带换行
         origin = origin.replaceAll("(?<!\\$CODE-(.*)?)(?<=>)\\s*(?=<)", "");
+        System.out.println("去空格："+origin);
+        origin = origin.replaceAll("<p><\\/p>", "");
+        System.out.println("去<p></p>："+origin);
         origin = origin.replaceAll("<li>", "<\\$LIST\\$>");
         origin = origin.replaceAll("<p><br><\\/p>", "\n");
         origin = origin.replaceAll("<br>", "\n");
@@ -414,7 +417,7 @@ public class Parser {
         return this.replacementMap;
     }
 
-    public String parseExe(String raw) {
+    public ArrayList<BlockItem> parseExe(String raw) {
         Parser parser = new Parser();
         String tmp = parser.parseCode(raw);
         tmp = parser.parseLink(tmp);
@@ -427,6 +430,10 @@ public class Parser {
         String[] blocks = parser.parseBlock(tmp);
         ArrayList<BlockItem> blockItems = parser.parseSentences(blocks);
         blockItems = parser.parseReplacement(blockItems);
+        return blockItems;
+    }
+
+    public String printResult(ArrayList<BlockItem> blockItems){
         String result = "";
         for (BlockItem blockItem : blockItems) {
             result = result.concat("\n------------------   block start   --------------------------------\n\n");
@@ -448,5 +455,13 @@ public class Parser {
             result  = result.concat("\n------------------------   block end   -----------------------------\n\n");
         }
         return result;
+    }
+
+    public FR getFR(String name, String title, String des){
+        FR fr = new FR();
+        fr.setSystemName(name);
+        fr.setTitle(title);
+        fr.setBlockItems(parseExe(des));
+        return fr;
     }
 }

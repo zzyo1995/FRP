@@ -1,6 +1,7 @@
 package main.java.servlet;
 
 import edu.stanford.nlp.io.EncodingPrintWriter;
+import main.java.bean.FR;
 import main.java.parse.Parser;
 
 import javax.servlet.RequestDispatcher;
@@ -28,8 +29,9 @@ public class indexServlet extends HttpServlet {
                 FRDes
         );
         String raw = FRDes;
-        String result = parser.parseExe(raw);
+        String result = parser.printResult(parser.parseExe(raw));
         System.out.println(result);
+        FR fr = parser.getFR(name, FRTitle, FRDes);
         //request.setAttribute("parseResult", result);
         //RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/show.jsp");
         //rd.forward(request, response);

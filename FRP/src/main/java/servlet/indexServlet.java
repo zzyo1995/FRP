@@ -1,5 +1,6 @@
 package main.java.servlet;
 
+import edu.stanford.nlp.io.EncodingPrintWriter;
 import main.java.parse.Parser;
 
 import javax.servlet.RequestDispatcher;
@@ -9,6 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  * Created by zzyo on 2017/3/16.
@@ -28,9 +30,11 @@ public class indexServlet extends HttpServlet {
         String raw = FRDes;
         String result = parser.parseExe(raw);
         System.out.println(result);
-        request.setAttribute("parseResult", result);
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/show.jsp");
-        rd.forward(request, response);
+        //request.setAttribute("parseResult", result);
+        //RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/show.jsp");
+        //rd.forward(request, response);
+        PrintWriter printWriter = response.getWriter();
+        printWriter.print(result);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

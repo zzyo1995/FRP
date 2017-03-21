@@ -1,5 +1,7 @@
 package main.java.bean;
 
+import main.java.parse.Parser;
+
 import java.util.ArrayList;
 
 /**
@@ -21,8 +23,9 @@ public class FR {
         this.blockItems = blockItems;
     }
 
-    public String getSystemName() {
-        return systemName;
+    public String[] getSystemName() {
+        String[] names = Parser.getTokens(systemName);
+        return names;
     }
 
     public void setSystemName(String systemName) {

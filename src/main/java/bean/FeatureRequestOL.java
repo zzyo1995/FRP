@@ -7,7 +7,7 @@ import java.util.ArrayList;
 /**
  * Created by zzyo on 2017/3/17.
  */
-public class FeatureRequestOL extends FeatureRequest{
+public class FeatureRequestOL extends FeatureRequest {
 
     private String systemName;
     private String title;
@@ -25,7 +25,7 @@ public class FeatureRequestOL extends FeatureRequest{
         this.title = title;
         this.blocks = blocks;
         this.sentences = sentences;
-        for(Sentence sentence : sentences){
+        for (Sentence sentence : sentences) {
             this.addSentence(sentence.getResult());
         }
     }
@@ -58,11 +58,11 @@ public class FeatureRequestOL extends FeatureRequest{
         return sentences;
     }
 
-    public int getNumSentences(){
+    public int getNumSentences() {
         return sentences.size();
     }
 
-    public int getNumBlocks(){
+    public int getNumBlocks() {
         return blocks.size();
     }
 
@@ -70,22 +70,30 @@ public class FeatureRequestOL extends FeatureRequest{
         this.sentences = sentences;
     }
 
-    public boolean isSameBlock(int s1, int s2){
+    public boolean isSameBlock(int s1, int s2) {
         int b1 = getBlockIndex(s1);
         int b2 = getBlockIndex(s2);
         return b1 == b2;
     }
 
-    public  int getBlockIndex(int sentence){
+    public int getBlockIndex(int sentence) {
         int bIndex = 0;
-        for(ArrayList<Integer> block : this.blocks){
-            for(int index : block){
-                if( sentence == index){
+        for (ArrayList<Integer> block : this.blocks) {
+            for (int index : block) {
+                if (sentence == index) {
                     return bIndex;
                 }
             }
             bIndex++;
         }
         return -1;
+    }
+
+    public String toString() {
+        String print = "";
+        for (Sentence sentence : this.getSentences()) {
+            print = print.concat(sentence.toString());
+        }
+        return print;
     }
 }

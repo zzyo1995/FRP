@@ -45,7 +45,6 @@ public class Parser {
         matcher.appendTail(sb);
         origin = sb.toString();
         System.out.println(origin);
-        //ArrayList<BlockItem> blockItems = new ArrayList<>();
         ArrayList<String> blockList = new ArrayList<>(Arrays.asList(origin.split("<\\$BLOCK-END\\$>")));
         for (int i = 0; i < blockList.size(); i++) {
             if (blockList.get(i).matches("^<\\$CODE-.+?>$")) {
@@ -69,10 +68,8 @@ public class Parser {
     }
 
     public void parseSentences(String[] blocks) {
-        //ArrayList<BlockItem> blockItems = new ArrayList<>();
         int sIndex = 0, bIndex = 0;
         for (String str : blocks) {
-            //BlockItem blockItem = new BlockItem();
             ArrayList<Integer> block = new ArrayList<>();
             this.blocks.add(block);
             String[] sentences = {};
@@ -424,25 +421,6 @@ public class Parser {
 
     public String printResult(FeatureRequestOL fr) {
         String result = "";
-/*        for (BlockItem blockItem : blockItems) {
-            result = result.concat("\n------------------   block start   --------------------------------\n\n");
-
-            for (Sentence sentence : blockItem.getSentences()) {
-                result = result.concat("\n--------------------   sentence start   -------------------------\n");
-                result = result.concat("\nOrigin is--->" + sentence.getOrigin() + "\n");
-                result = result.concat("\nResult is--->" + sentence.getResult() + "\n");
-                result = result.concat("\nReplace is--->" + sentence.getReplacements().toString() + "\n");
-                for (Sentence sentence1 : sentence.getItemLists()) {
-                    result = result.concat("\n        ---------------------------   list sentence start   --------------------\n");
-                    result = result.concat("\n        Origin is--->" + sentence1.getOrigin() + "\n");
-                    result = result.concat("\n        Result is--->" + sentence1.getResult() + "\n");
-                    result = result.concat("\n        Replace is--->" + sentence1.getReplacements().toString() + "\n");
-                    result = result.concat("\n        ----------------------------   list sentence end   ---------------------\n");
-                }
-                result = result.concat("\n-----------------------   sentence end   ----------------------------\n");
-            }
-            result = result.concat("\n------------------------   block end   -----------------------------\n\n");
-        }*/
         result = result.concat("\n----------------   parsing start   -----------------------------\n");
         int sIndex = 0;
         ArrayList<Sentence> sentences = fr.getSentences();

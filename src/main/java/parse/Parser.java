@@ -5,8 +5,7 @@ import edu.stanford.nlp.process.CoreLabelTokenFactory;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.Tokenizer;
 import edu.stanford.nlp.process.TokenizerFactory;
-import main.java.bean.BlockItem;
-import main.java.bean.FR;
+import main.java.bean.FeatureRequestOL;
 import main.java.bean.Replacement;
 import main.java.bean.Sentence;
 import org.jsoup.Jsoup;
@@ -423,7 +422,7 @@ public class Parser {
         parseReplacement();
     }
 
-    public String printResult(FR fr) {
+    public String printResult(FeatureRequestOL fr) {
         String result = "";
 /*        for (BlockItem blockItem : blockItems) {
             result = result.concat("\n------------------   block start   --------------------------------\n\n");
@@ -471,9 +470,9 @@ public class Parser {
         return result;
     }
 
-    public FR getFR(String name, String title, String des) {
+    public FeatureRequestOL getFR(String name, String title, String des) {
         //fr.setBlockItems(parseExe(des));
-        FR fr = new FR();
+        FeatureRequestOL fr = new FeatureRequestOL();
         parseExe(des);
         fr.setSystemName(name);
         fr.setTitle(title);

@@ -28,10 +28,8 @@ public class indexServlet extends HttpServlet {
                 FRTitle + "\n\n\n\n\n" +
                 FRDes
         );
-        String raw = FRDes;
-        String result = parser.printResult(parser.parseExe(raw));
-        System.out.println(result);
         FR fr = parser.getFR(name, FRTitle, FRDes);
+        String result = parser.printResult(fr);
         //request.setAttribute("parseResult", result);
         //RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/jsp/show.jsp");
         //rd.forward(request, response);

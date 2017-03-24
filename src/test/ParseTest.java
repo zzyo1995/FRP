@@ -1,6 +1,7 @@
 package test;
 
 import main.java.bean.BlockItem;
+import main.java.bean.FR;
 import main.java.bean.Sentence;
 import main.java.parse.Parser;
 import org.junit.Test;
@@ -56,7 +57,7 @@ public class ParseTest {
     public void testCode() {
         System.out.println("---------------------   parse code  -----------------------------\n");
         Parser parser = new Parser();
-        String tmp = parser.parseCode(test3);
+        String tmp = parser.parseCode(test2);
         System.out.println(tmp);
         System.out.println("---------------------   parse link  -----------------------------\n");
         tmp = parser.parseLink(tmp);
@@ -84,8 +85,8 @@ public class ParseTest {
         System.out.println(blocks.toString());
         System.out.println("---------------------   parse sentences  ------------------------------\n");
         System.out.println(parser.getReplacementMap());
-        ArrayList<BlockItem> blockItems = parser.parseSentences(blocks);
-        blockItems = parser.parseReplacement(blockItems);
+        /*parser.parseSentences(blocks);
+        parser.parseReplacement();
         for (BlockItem blockItem : blockItems) {
             System.out.println("------------------   block start   --------------------------------");
             for (Sentence sentence : blockItem.getSentences()) {
@@ -103,6 +104,22 @@ public class ParseTest {
                 System.out.println("-----------------------   sentence end   ----------------------------\n");
             }
             System.out.println("------------------------   block end   -----------------------------\n\n");
+        }*/
+    }
+
+    @Test
+    public void parseTest(){
+        Parser parser = new Parser();
+        FR fr = parser.getFR("","",test2);
+        System.out.println(parser.printResult(fr));
+        int bIndex = 0;
+        for(ArrayList<Integer> block : fr.getBlocks()){
+            System.out.print("Block "+bIndex+":");
+            for(int index : block){
+                System.out.print(index+"  ");
+            }
+            System.out.print("\n");
+            bIndex++;
         }
     }
 

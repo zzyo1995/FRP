@@ -11,7 +11,6 @@ public class FeatureRequestOL extends FeatureRequest{
 
     private String systemName;
     private String title;
-    //private ArrayList<BlockItem> blockItems = new ArrayList<>();
     private ArrayList<ArrayList<Integer>> blocks = new ArrayList<>();
     ArrayList<Sentence> sentences = new ArrayList<>();
 

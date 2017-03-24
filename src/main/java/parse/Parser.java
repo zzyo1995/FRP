@@ -472,7 +472,7 @@ public class Parser {
 
     public FeatureRequestOL getFR(String name, String title, String des) {
         //fr.setBlockItems(parseExe(des));
-        FeatureRequestOL fr = new FeatureRequestOL();
+        FeatureRequestOL fr = new FeatureRequestOL(title);
         parseExe(des);
         fr.setSystemName(name);
         fr.setTitle(title);

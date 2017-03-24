@@ -46,4 +46,12 @@ public class Sentence {
     public void addReplacements(Replacement replacement) {
         this.replacements.add(replacement);
     }
+
+    public String toString() {
+        String print = this.origin;
+        for (Sentence list : this.getItemLists()) {
+            print = print.concat(list.getOrigin());
+        }
+        return print;
+    }
 }

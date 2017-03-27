@@ -1,8 +1,6 @@
 package test;
 
-import main.java.bean.BlockItem;
-import main.java.bean.FR;
-import main.java.bean.Sentence;
+import main.java.bean.FeatureRequestOL;
 import main.java.parse.Parser;
 import org.junit.Test;
 
@@ -110,7 +108,7 @@ public class ParseTest {
     @Test
     public void parseTest(){
         Parser parser = new Parser();
-        FR fr = parser.getFR("","",test2);
+        FeatureRequestOL fr = parser.getFR("","",test2);
         System.out.println(parser.printResult(fr));
         int bIndex = 0;
         for(ArrayList<Integer> block : fr.getBlocks()){

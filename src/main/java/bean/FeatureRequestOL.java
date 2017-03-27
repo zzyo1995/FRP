@@ -1,18 +1,18 @@
 package main.java.bean;
 
-import main.java.parse.Parser;
-
 import java.util.ArrayList;
+
+import main.java.parse.Parser;
 
 /**
  * Created by zzyo on 2017/3/17.
  */
-public class FeatureRequestOL extends FeatureRequest {
+public class FeatureRequestOL extends FeatureRequest{
 
     private String systemName;
     private String title;
     private ArrayList<ArrayList<Integer>> blocks = new ArrayList<>();
-    ArrayList<Sentence> sentences = new ArrayList<>();
+    ArrayList<Sentence> fullSentences = new ArrayList<>();
 
 
     public FeatureRequestOL(String title) {
@@ -24,8 +24,8 @@ public class FeatureRequestOL extends FeatureRequest {
         this.systemName = systemName;
         this.title = title;
         this.blocks = blocks;
-        this.sentences = sentences;
-        for (Sentence sentence : sentences) {
+        this.fullSentences = sentences;
+        for(Sentence sentence : sentences){
             this.addSentence(sentence.getResult());
         }
     }
@@ -54,33 +54,30 @@ public class FeatureRequestOL extends FeatureRequest {
         this.blocks = blocks;
     }
 
-    public ArrayList<Sentence> getSentences() {
-        return sentences;
+    public ArrayList<Sentence> getFullSentences() {
+        return fullSentences;
     }
 
-    public int getNumSentences() {
-        return sentences.size();
-    }
 
-    public int getNumBlocks() {
+    public int getNumBlocks(){
         return blocks.size();
     }
 
-    public void setSentences(ArrayList<Sentence> sentences) {
-        this.sentences = sentences;
+    public void setFullSentences(ArrayList<Sentence> sentences) {
+        this.fullSentences = sentences;
     }
 
-    public boolean isSameBlock(int s1, int s2) {
+    public boolean isSameBlock(int s1, int s2){
         int b1 = getBlockIndex(s1);
         int b2 = getBlockIndex(s2);
         return b1 == b2;
     }
 
-    public int getBlockIndex(int sentence) {
+    public  int getBlockIndex(int sentence){
         int bIndex = 0;
-        for (ArrayList<Integer> block : this.blocks) {
-            for (int index : block) {
-                if (sentence == index) {
+        for(ArrayList<Integer> block : this.blocks){
+            for(int index : block){
+                if( sentence == index){
                     return bIndex;
                 }
             }
@@ -89,11 +86,16 @@ public class FeatureRequestOL extends FeatureRequest {
         return -1;
     }
 
+	public Sentence getFullSentence(int i) {
+		return fullSentences.get(i);
+	}
+	
     public String toString() {
+    	
         String print = "";
-        for (Sentence sentence : this.getSentences()) {
+        for (Sentence sentence : this.getFullSentences()) {
             print = print.concat(sentence.toString());
         }
-        return print;
+        return super.toString()+"\n"+print;
     }
 }

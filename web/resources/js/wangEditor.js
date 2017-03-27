@@ -3221,7 +3221,7 @@ _e(function (E, $) {
     E.config.legalTags = 'p,h1,h2,h3,h4,h5,h6,blockquote,table,ul,ol,pre';
 
     // 语言包
-    E.config.lang = E.langs['zh-cn'];
+    E.config.lang = E.langs.en;
 
     // 菜单配置
     E.config.menus = [

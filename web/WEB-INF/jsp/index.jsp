@@ -18,7 +18,10 @@
     <!--引入wangEditor.css-->
     <link rel="stylesheet" type="text/css" href="/resources/css/wangEditor.min.css">
 </head>
-<body style="display: flex;flex-direction: column;justify-content: center;">
+<%--Chrome垂直居中--%>
+<%--display: flex;flex-direction: column;justify-content: center;--%>
+<%--FireFox IE 垂直居中--%>
+<body style="position: fixed;left:50%; top: 50%;-webkit-transform: translateX(-50%) translateY(-50%)">
 <div class="container">
     <div class="row" style="border: thin solid #5bc0de;padding:20px 30px;border-radius: 15px">
         <div class="col-md-6">
@@ -35,7 +38,8 @@
                 </div>
                 <div class="form-group">
                     <label for="FRDes">FR Description</label>
-                    <textarea id="FRDes" style="height:200px" name="FRDes"></textarea>
+                    <textarea id="FRDes" style="height:200px" name="FRDes" placeholder="Balabala"
+                              autofocus></textarea>
                 </div>
                 <button class="btn btn-info" type="button" onclick="confirm()">Confirm</button>
             </form>
@@ -47,7 +51,6 @@
             </div>
         </div>
     </div>
-
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
@@ -95,7 +98,8 @@
         }
         if (item === 'aligncenter') {
             return null;
-        }if (item === 'alignright') {
+        }
+        if (item === 'alignright') {
             return null;
         }
         if (item === 'img') {
@@ -129,7 +133,7 @@
             FRTitle: title,
             FRDes: html
         }, function (data) {
-
+            $('#output').val(data);
         })
     }
 </script>

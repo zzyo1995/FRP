@@ -1,18 +1,18 @@
 package main.java.parse;
 
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.process.CoreLabelTokenFactory;
-import edu.stanford.nlp.process.PTBTokenizer;
-import edu.stanford.nlp.process.Tokenizer;
-import edu.stanford.nlp.process.TokenizerFactory;
+import edu.stanford.nlp.ling.HasWord;
+import edu.stanford.nlp.process.*;
 import main.java.bean.FeatureRequestOL;
 import main.java.bean.Replacement;
 import main.java.bean.Sentence;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -34,59 +34,100 @@ public class Parser {
         return replacementMap;
     }
 
-    public String[] parseBlock(String origin) {
-        System.out.println(origin);
-        Pattern pattern = Pattern.compile("(\\s*?\\n){2,}");
-        Matcher matcher = pattern.matcher(origin);
-        StringBuffer sb = new StringBuffer();
-        while (matcher.find()) {
-            matcher.appendReplacement(sb, "<\\$BLOCK-END\\$>");
-        }
-        matcher.appendTail(sb);
-        origin = sb.toString();
-        System.out.println(origin);
+    public ArrayList<String> parseBlock(String origin) {
         ArrayList<String> blockList = new ArrayList<>(Arrays.asList(origin.split("<\\$BLOCK-END\\$>")));
         for (int i = 0; i < blockList.size(); i++) {
-            if (blockList.get(i).matches("^<\\$CODE-.+?>$")) {
-                /*blocks[i - 1] = blocks[i - 1].concat("\n" + blocks[i] + "\n");
-                int index = i;
-                for (; index < blocks.length - 1; index++) {
-                    blocks[index] = blocks[index + 1];
-                }
-                blocks[index] = "";*/
-                String tmp = blockList.get(i-1);
-                blockList.set(i-1,tmp.concat("\n" + blockList.get(i) + "\n"));
+            /*if (blockList.get(i).matches("^<\\$CODE-.+?>$")) {
+                String tmp = blockList.get(i - 1);
+                blockList.set(i - 1, tmp.concat("\n" + blockList.get(i) + "\n"));
                 blockList.remove(i);
-            }
+            }*/
+            String tmp = blockList.get(i);
+            tmp = tmp.replaceAll("(?<=<)\\$", "");
+            tmp = tmp.replaceAll("\\$(?=\\d{0,2}>)", "");
+            blockList.set(i, tmp);
         }
-        String[] blocks = blockList.toArray(new String[blockList.size()]);
-        for (String block : blocks) {
+        for (String block : blockList) {
             System.out.println("block--->" + block);
         }
         System.out.println("------------------------------------------------");
-        return blocks;
+        return blockList;
     }
 
-    public void parseSentences(String[] blocks) {
+    public void parseSentences(ArrayList<String> blocks) {
+        int sIndex = 0, bIndex = 0;
+        for (String str : blocks) {
+            ArrayList<Integer> block = new ArrayList<>();
+            this.blocks.add(block);
+            Reader reader = new StringReader(str);
+            DocumentPreprocessor dp = new DocumentPreprocessor(reader);
+            ArrayList<String> sentences = new ArrayList<>();
+            for (List<HasWord> words : dp) {
+                String sentence = "";
+                for (HasWord word : words) {
+                    sentence = sentence.concat(" " + word.word());
+                }
+                sentences.add(sentence);
+            }
+            // 处理孤立的LIST,CODE
+            for (int i = 0; i < sentences.size(); i++) {
+                String sen = sentences.get(i);
+                if (sen.matches("^\\s*<LIST\\d+.*")) {
+                    sentences.set(i - 1, sentences.get(i - 1).concat(sen));
+                    sentences.remove(i);
+                } else if (sen.matches("^\\s*<CODE-.*")) {
+                    sentences.set(i - 1, sentences.get(i - 1).concat(sen));
+                    sentences.remove(i);
+                }
+            }
+            for (String sen : sentences) {
+                String tmp = sen;
+                Sentence sentence = new Sentence();
+                Pattern pattern = Pattern.compile("<LIST\\d+>");
+                Matcher matcher = pattern.matcher(sen);
+                while (matcher.find()){
+                    String list = matcher.group(0);
+                    Sentence sList = new Sentence();
+                    String origin = this.replacementMap.get(list).getOrigin();
+                    sList.setOrigin(origin);
+                    sList.setResult(origin);
+                    sentence.addItemList(sList);
+                    tmp = tmp.replace(list, "\n* "+origin);
+                }
+                sentence.setOrigin(tmp);
+                sentence.setResult(sen.replaceAll("<LIST\\d+>", ""));
+                block.add(sIndex);
+                this.blocks.set(bIndex, block);
+                this.sentences.add(sentence);
+                sIndex++;
+            }
+            bIndex++;
+        }
+    }
+
+    /*public void parseSentencesTMP(ArrayList<String> blocks) {
         int sIndex = 0, bIndex = 0;
         for (String str : blocks) {
             ArrayList<Integer> block = new ArrayList<>();
             this.blocks.add(block);
             String[] sentences = {};
             // can not parse sentences like "the price is 2.3 is a number."
-            sentences = str.split("((\\.|\\?|\\!)((\\s*)|(?=[A-Z])))|(\\n)");
+            sentences = str.split("(?<!\\s[A-Z])((\\.|\\?|\\!)((\\s*)|(?=[A-Z])))|(\\n)");
+            for (String tmp : sentences) {
+                System.out.println(tmp);
+            }
             ArrayList<String> sentenceArrayList = new ArrayList<>(Arrays.asList(sentences));
             //System.out.println("length is :" + sentences.length);
             for (int i = 0; i < sentenceArrayList.size(); i++) {
                 Sentence sentence = new Sentence();
                 //System.out.println("sentence --->" + sentenceArrayList.get(i));
-                if (sentenceArrayList.get(i).matches("^<\\$LIST\\$>.*")) {
+                if (sentenceArrayList.get(i).matches("^<LIST>.*")) {
                     if (sentenceArrayList.get(i - 1).matches(".*:$")) {
                         // 如果是  str：\n 1，～2.～3.～ 修改上个sentence:(addItmList,setOrigin)
                         //System.out.println("LISTS START:------->");
                         for (int j = i; j < sentenceArrayList.size(); j++) {
-                            if (sentenceArrayList.get(j).matches("^<\\$LIST\\$>.*")) {
-                                String list = sentenceArrayList.get(j).replaceFirst("<\\$LIST\\$>", "");
+                            if (sentenceArrayList.get(j).matches("^<LIST>.*")) {
+                                String list = sentenceArrayList.get(j).replaceFirst("<LIST>", "");
                                 Sentence itemList = new Sentence();
                                 itemList.setOrigin(list);
                                 itemList.setResult(list);
@@ -116,7 +157,7 @@ public class Parser {
             //blockItems.add(blockItem);
             bIndex++;
         }
-    }
+    }*/
 
     public static List<CoreLabel> getRawWords(String text) {
         TokenizerFactory<CoreLabel> tokenizerFactory = PTBTokenizer.factory(new CoreLabelTokenFactory(), "");
@@ -152,7 +193,8 @@ public class Parser {
         String origin = sentence.getOrigin();
         String tmp = origin;
         int flag = 0;
-        Pattern pattern = Pattern.compile("<\\$.+?\\$\\d{0,2}>");
+        //Pattern pattern = Pattern.compile("<\\$.+?\\$\\d{0,2}>");
+        Pattern pattern = Pattern.compile("<[a-zA-Z-\\s]+\\d+>");
         Matcher matcher = pattern.matcher(origin);
         while (matcher.find()) {
             flag = 1;
@@ -175,12 +217,15 @@ public class Parser {
         }
         String result = sentence.getResult();
         result = result.replaceAll("<\\$", "<");
-        result = result.replaceAll("\\$\\d{0,2}>", ">");
+        result = result.replaceAll("(?<=[a-zA-Z])\\d{0,2}>", ">");
         sentence.setResult(result);
         return sentence;
     }
 
     public void parseReplacement() {
+        for (Sentence sen : this.sentences) {
+            System.out.println(sen.getOrigin());
+        }
         // change sentence.origin to origin text
         //set Replacement List in Sentence
         // set index of replacement
@@ -203,10 +248,11 @@ public class Parser {
             Replacement replacement = new Replacement();
             replacement.setOrigin(originCode);
             replacement.setReplacement("<CODE-" + codeType.toUpperCase() + ">");
-            this.replacementMap.put(type, replacement);
+            this.replacementMap.put("<CODE-" + codeType.toUpperCase() + codeIndex + ">", replacement);
             //code.text(codeType);
             //System.out.println(originCode+"\n"+codeType);
-            code.parent().after(type);
+            //　认定code是BLOCK的结束
+            code.parent().after(type + "<$BLOCK-END$>\n");
             code.parent().remove();
             codeIndex++;
         }
@@ -231,7 +277,7 @@ public class Parser {
             Replacement replacement = new Replacement();
             replacement.setOrigin(href);
             replacement.setReplacement("<LINK-HTTP>");
-            this.replacementMap.put(type, replacement);
+            this.replacementMap.put("<LINK-HTTP" + linkIndex + ">", replacement);
             if (text.matches("(http|https|ftp):\\/\\/.+")) {
                 link.after(type);
             } else {
@@ -246,6 +292,29 @@ public class Parser {
         return origin;
     }
 
+    public String parseList(String origin) {
+        //origin = origin.replaceAll("<li>(.+)?<\\/li>", "<list>");
+        int lIndex = 0;
+        Pattern pattern = Pattern.compile("<li>(.+)?<\\/li>");
+        Matcher matcher = pattern.matcher(origin);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String str = matcher.group(0);
+            System.out.println("STR--->" + str);
+            String list = matcher.group(1);
+            System.out.println("LIST--->" + list);
+            String type = "<LIST" + lIndex + ">";
+            matcher.appendReplacement(sb, type);
+            Replacement replacement = new Replacement();
+            replacement.setOrigin(list);
+            this.replacementMap.put(type, replacement);
+            lIndex++;
+        }
+        matcher.appendTail(sb);
+        origin = sb.toString();
+        return origin;
+    }
+
     public String parseFile(String origin) {
         String[] fileTypes = {"php", "sql", "java", "rm", "htaccess", "jar", "py", "exe"};
         String regEx = "";
@@ -255,7 +324,7 @@ public class Parser {
             // parse unix path file(full path and relative path)
             regEx = "((((\\.){0,2}\\/)*((((\\w*-|\\w*\\.)*\\w*)\\/)*((\\w*-|\\w*\\.)*\\w*)))|" +
                     // windows path(full path and relative path)
-                    "(([C-Z]:|(\\.){0,2}\\\\)?(((\\w*-|\\w*\\.)*\\w*)\\\\)*((\\w*-|\\w*\\.)*\\w*)))\\." + fileTypes[index] + "(?=[^\\.])";
+                    "(([C-Z]:|(\\.){0,2}\\\\)?(((\\w*-|\\w*\\.)*\\w*)\\\\)*((\\w*-|\\w*\\.)*\\w*)))\\." + fileTypes[index] + "(?!\\.[a-z])";
             Pattern pattern = Pattern.compile(regEx);
             Matcher matcher = pattern.matcher(origin);
             while (matcher.find()) {
@@ -268,7 +337,7 @@ public class Parser {
                 Replacement replacement = new Replacement();
                 replacement.setOrigin(path);
                 replacement.setReplacement("<FILE-" + fileTypes[index].toUpperCase() + ">");
-                this.replacementMap.put("<$FILE-" + fileTypes[index].toUpperCase() + "$" + fileIndex + ">", replacement);
+                this.replacementMap.put("<FILE-" + fileTypes[index].toUpperCase() + fileIndex + ">", replacement);
                 matcher.appendReplacement(sb, type);
                 fileIndex++;
             }
@@ -302,7 +371,7 @@ public class Parser {
             Replacement replacement = new Replacement();
             replacement.setOrigin(path);
             replacement.setReplacement("<PATH>");
-            this.replacementMap.put("<$PATH$" + pathIndex + ">", replacement);
+            this.replacementMap.put("<PATH" + pathIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             pathIndex++;
         }
@@ -313,18 +382,24 @@ public class Parser {
     }
 
     public String parseHtmlToText(String origin) {
-        // code area 自带换行
-        origin = origin.replaceAll("(?<!\\$CODE-(.*)?)(?<=>)\\s*(?=<)", "");
-        System.out.println("去空格：" + origin);
         origin = origin.replaceAll("<p><\\/p>", "");
-        System.out.println("去<p></p>：" + origin);
-        origin = origin.replaceAll("<li>", "<\\$LIST\\$>");
-        origin = origin.replaceAll("<p><br><\\/p>", "\n");
-        origin = origin.replaceAll("<br>", "\n");
-        origin = origin.replaceAll("<\\/p>", "\n");
-        origin = origin.replaceAll("<\\/li>", "\n");
+        origin = origin.replaceAll("<br>", "");
+        origin = origin.replaceAll("<p><br><\\/p>", "");
+        // replace space and \n
+        origin = origin.replaceAll("(?<=[^$]>)\\s*(?=<)", "");
+        //System.out.println("replace space：" + origin);
+        //origin = origin.replaceAll("<li>", "<LIST>");
+        // list 结束即BLOCK结束
+        origin = origin.replaceAll("<\\/[o,u]l>", "<\\$BLOCK-END\\$>\n");     // 记得去掉换行
+        //　</p> 后是list/code 不能替换BLOCK-END
+        origin = origin.replaceAll("<\\/p>(?!(<ol>)|(<\\$CODE-))", "<\\$BLOCK-END\\$>\n");      // 记得去掉换行
+        //origin = origin.replaceAll("<\\/li>", "\n");        // 记得去掉换行
         origin = origin.replaceAll("<[\\/]?[a-z]+>", "");
         origin = origin.replaceAll("&nbsp;", " ");
+        // 去掉前面空格和空行
+        origin = origin.replaceAll("(?<=\n|^)(\\s*)", "");
+        // 去掉最后的换行
+        origin = origin.replaceAll("\n$", "");
         return origin;
     }
 
@@ -342,7 +417,7 @@ public class Parser {
             Replacement replacement = new Replacement();
             replacement.setOrigin(quote);
             replacement.setReplacement("<QUOTE>");
-            this.replacementMap.put("<$QUOTE$" + quoteIndex + ">", replacement);
+            this.replacementMap.put("<QUOTE" + quoteIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             quoteIndex++;
         }
@@ -366,7 +441,7 @@ public class Parser {
             Replacement replacement = new Replacement();
             replacement.setOrigin(email);
             replacement.setReplacement("<EMAIL>");
-            this.replacementMap.put("<$EMAIL$" + emailIndex + ">", replacement);
+            this.replacementMap.put("<EMAIL" + emailIndex + ">", replacement);
             matcher.appendReplacement(sb, type);
             emailIndex++;
         }
@@ -393,7 +468,7 @@ public class Parser {
                     Replacement replacement = new Replacement();
                     replacement.setOrigin(str);
                     replacement.setReplacement(replace[i]);
-                    this.replacementMap.put("<$" + replace[i] + "$" + shortIndex + ">", replacement);
+                    this.replacementMap.put("<" + replace[i] + "" + shortIndex + ">", replacement);
                     matcher.appendReplacement(sb, type + blank);
                     shortIndex++;
                 }
@@ -408,13 +483,14 @@ public class Parser {
     public void parseExe(String raw) {
         String tmp = parseCode(raw);
         tmp = parseLink(tmp);
+        tmp = parseList(tmp);
         tmp = parseEmail(tmp);
         tmp = parseQuote(tmp);
         tmp = parseShort(tmp);
         tmp = parseFile(tmp);
         tmp = parsePath(tmp);
         tmp = parseHtmlToText(tmp);
-        String[] blocks = parseBlock(tmp);
+        ArrayList<String> blocks = parseBlock(tmp);
         parseSentences(blocks);
         parseReplacement();
     }
@@ -423,7 +499,7 @@ public class Parser {
         String result = "";
         result = result.concat("\n----------------   parsing start   -----------------------------\n");
         int sIndex = 0;
-        ArrayList<Sentence> sentences = fr.getSentences();
+        ArrayList<Sentence> sentences = fr.getFullSentences();
         ArrayList<ArrayList<Integer>> blocks = fr.getBlocks();
 
         for (int i = 0; i < blocks.size(); i++) {
@@ -450,12 +526,8 @@ public class Parser {
 
     public FeatureRequestOL getFR(String name, String title, String des) {
         //fr.setBlockItems(parseExe(des));
-        FeatureRequestOL fr = new FeatureRequestOL(title);
         parseExe(des);
-        fr.setSystemName(name);
-        fr.setTitle(title);
-        fr.setBlocks(this.blocks);
-        fr.setSentences(this.sentences);
+        FeatureRequestOL fr = new FeatureRequestOL(name, title, this.blocks, this.sentences);
         return fr;
     }
 }

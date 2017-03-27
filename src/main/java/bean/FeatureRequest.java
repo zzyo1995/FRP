@@ -282,8 +282,7 @@ public class FeatureRequest {
 	}
 	
 	
-	
-	public int getNumSentence(){
+	public int getNumSentences(){
 		return sentences.size();
 	}
 

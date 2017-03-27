@@ -1,4 +1,4 @@
-package main.java.core;
+package test;
 
 import java.io.File;
 import java.io.FileNotFoundException;
